@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>  
+    </head>
+    <body>
+        <div id="projectApp">
+            <header>Gestion des projets</header>
+            <main>
+                <button @click="showProjectModal(null)">Ajouter</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tboby>
+                        <tr v-for="project in projects" :key="project.id">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <button @click="showProjectModal(project)">Editer</button>
+                                <button @click="deleteProject(project.id)">Supprimer</button>
+                            </td>
+                        </tr>
+                    </tboby>
+                </table>
+                <nav style="display: flex; justify-content: center; margin-top: 20px;">
+                    <ul style="display: flex; list-style: none; padding: 0;">
+                        <li v-for="page in totalPages" :key="page" @click="changePage(page)" style="margin: 0 5px;">
+                            <a href="#" :style="{ fontWeight: currentPage === page ? 'bold' : 'normal', cursor: 'pointer' }">{ { page } }</a>
+                        </li>
+                    </ul>
+                </nav>
+            </main>
+            <footer></footer>
+
+            <dialog id="project-dialog">
+                <h2>Projet</h2>
+                <form @submit.prevent="saveProject">
+                    <fieldset>
+                        <label for="name">Nom : </label>
+                        <input type="text" id="name" v-model="formData.name" placeholder="Nom" required>
+                        <label for="description">Description</label>
+                        <input type="text" id="description" v-model="formData.description" placeholder="Description" required>
+                        <label for="birthYear">Year of Birth</label>
+                        <input type="number" id="birthYear" v-model="formData.birthYear" placeholder="Year of birth" required>
+                    </fieldset>
+                    <menu>
+                        <button type="submit">Enregistrer</button>
+                        <button type="button" @click="closeModal">Annuler</button>
+                    </menu>
+                </form>
+            </dialog>
+        </div>
+        <script>
+            const {createApp, ref, computed} = Vue;
+
+            createApp({
+                data() {
+                    return {
+                        projects: [],
+                        modalVisible: false,
+                        editMode: false,
+                        formData: {
+                            name: '',
+                            description: ''
+                        },
+                        editedProjectId: null,
+                        pageSize: 5,
+                        currentPage: 1,
+                        totalPages: 1
+                    };
+                },
+                methods: {
+                    getAllProjects(page) {
+                        fetch(`/api/projects?page=${page - 1}&size=${this.pageSize}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.projects = data.content;
+                                    this.totalPages = data.totalPages;
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching projects :', error);
+                                });
+                    },
+                    showProjectModal(project) {
+                        this.editMode = !!project;
+                        this.modalVisible = true;
+                        if (project) {
+                            this.editedProjectId = project.id;
+                            this.formData = {...project};
+                        } else {
+                            this.resetForm();
+                        }
+                        document.getElementById('project-dialog').showModal();
+                    },
+                    saveProject() {
+                        if (this.editMode) {
+                            fetch(`/api/project/${this.editedProjectId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(this.formData)
+                            })
+                                    .then(() => {
+                                        this.getAllProjects(this.currentPage);
+                                        this.closeModal();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error updating project :', error);
+                                    });
+                        } else {
+                            fetch(`/api/projects`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(this.formData)
+                            })
+                                    .then(() => {
+                                        this.getAllProjects(this.currentPage);
+                                        this.closeModal();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error adding project : ', error);
+                                    });
+                        }
+                    },
+                    deleteProject(projectId) {
+                        fetch(`/api/project/${projectId}`, {
+                            method: 'DELETE'
+                        })
+                                .then(() => {
+                                    this.getAllProjects(this.currentPage);
+                                })
+                                .catch(error => {
+                                    console.error('Error deleting project :', error);
+                                });
+                    },
+                    closeModal() {
+                        this.modalVisible = false;
+                        this.editMode = false;
+                        this.resetForm();
+                        document.getElementById('project-dialog').close();
+                    },
+                    resetForm() {
+                        this.formData = {
+                            name: '',
+                            description: ''
+                        };
+                        this.editedProjectId = null;
+                    },
+                    changePage(page) {
+                        this.currentPage = page;
+                        this.getAllProjects(page);
+                    }
+                },
+                mounted() {
+                    this.getAllProjects(this.currentPage);
+                }
+            }).mount('#projectApp');
+        </script>
+
+    </body>
+</html>
