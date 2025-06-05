@@ -4,17 +4,66 @@
         <title>TODO supply a title</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="css/main.css">
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>  
+        <style>
+            #projectApp {
+                margin-left: auto;
+                margin-right: auto;
+                width: 80%;
+            }
+
+            #projectApp header {
+                text-align: center;
+                font-size: 24px;
+                border-bottom: 1px solid lightslategrey;
+                margin-bottom: 20px;
+            }
+
+            #projectApp-table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            #projectApp-table td, #projectApp-table th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #projectApp-table tr:nth-child(even){
+                background-color: #f2f2f2;
+            }
+
+            #projectApp-table tr:hover {
+                background-color: #ddd;
+            }
+
+            #projectApp-table th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: DodgerBlue;
+                color: white;
+            }
+            
+            #project-dialog {
+                width: 600px;
+            }
+        </style>
     </head>
     <body>
+        <div class="header">
+            <h1>FundRaising Progress</h1>
+            <div class="nav"><a href="index.html">&#x2302;</a> - Gestion des projets</div>
+        </div>
+
         <div id="projectApp">
-            <header>Gestion des projets</header>
+            <header>Projets</header>
             <main>
-                <button @click="showProjectModal(null)">Ajouter</button>
-                <table>
+                <table id="projectApp-table">
                     <thead>
                         <tr>
-                            <th>Id</th>
+                            <th>Identifiant</th>
                             <th>Titre</th>
                             <th>Description</th>
                             <th>Actions</th>
@@ -39,19 +88,23 @@
                         </li>
                     </ul>
                 </nav>
+                <button @click="showProjectModal(null)">Ajouter</button>
             </main>
             <footer></footer>
 
             <dialog id="project-dialog">
-                <h2>Projet</h2>
                 <form @submit.prevent="saveProject">
                     <fieldset>
+                        <div style="display: grid; grid-template-columns: 25% 75%">
                         <label for="name">Nom : </label>
                         <input type="text" id="name" v-model="formData.name" placeholder="Nom" required>
-                        <label for="description">Description</label>
+                        <label for="description">Description : </label>
                         <input type="text" id="description" v-model="formData.description" placeholder="Description" required>
-                        <label for="birthYear">Year of Birth</label>
-                        <input type="number" id="birthYear" v-model="formData.birthYear" placeholder="Year of birth" required>
+                        <label for="goalAmount">Montant cible : </label>
+                        <input type="number" id="goalAmount" v-model="formData.goalAmount" placeholder="Montant cible" required>
+                        <label for="currentAmount">Montant actuel : </label>
+                        <input type="number" id="currentAmount" v-model="formData.currentAmount" placeholder="Montant actuel" required>
+                        </div>
                     </fieldset>
                     <menu>
                         <button type="submit">Enregistrer</button>
