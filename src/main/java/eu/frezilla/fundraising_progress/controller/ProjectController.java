@@ -2,6 +2,7 @@ package eu.frezilla.fundraising_progress.controller;
 
 import eu.frezilla.fundraising_progress.entity.Project;
 import eu.frezilla.fundraising_progress.repository.ProjectRepository;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +22,7 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     
     public ProjectController(ProjectRepository projectRepository) {
-        this.projectRepository = projectRepository;
+        this.projectRepository = Objects.requireNonNull(projectRepository);
     }
     
     @PostMapping

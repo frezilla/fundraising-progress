@@ -4,22 +4,26 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 
 @Entity
 public class Project implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     private Double currentValue;
-    
+
     private String description;
-    
+
     private Double goalValue;
-    
+
     private String name;
+
+    @ManyToOne
+    private Show show;
 
     public Long getId() {
         return id;
@@ -60,7 +64,13 @@ public class Project implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
-    
-        
+
+    public Show getShow() {
+        return show;
+    }
+
+    public void setShow(Show show) {
+        this.show = show;
+    }
+
 }
