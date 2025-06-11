@@ -4,8 +4,9 @@
         <title>Gestion des projets</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="pics/cash1.svg">
         <link rel="stylesheet" href="css/main.css">
-        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>  
+        <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
         <style>
             #projectApp {
                 margin-left: auto;
@@ -71,12 +72,12 @@
                     </thead>
                     <tboby>
                         <tr v-for="project in projects" :key="project.id">
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ project.id }}</td>
+                            <td>{{ project.name }}</td>
+                            <td>{{ project.description }}</td>
                             <td>
                                 <button @click="showProjectModal(project)">Editer</button>
-                                <button @click="deleteProject(project.id)">Supprimer</button>
+                                <button class="delete" @click="deleteProject(project.id)">Supprimer</button>
                             </td>
                         </tr>
                     </tboby>
@@ -84,7 +85,7 @@
                 <nav style="display: flex; justify-content: center; margin-top: 20px;">
                     <ul style="display: flex; list-style: none; padding: 0;">
                         <li v-for="page in totalPages" :key="page" @click="changePage(page)" style="margin: 0 5px;">
-                            <a href="#" :style="{ fontWeight: currentPage === page ? 'bold' : 'normal', cursor: 'pointer' }">{ { page } }</a>
+                            <a href="#" :style="{ fontWeight: currentPage === page ? 'bold' : 'normal', cursor: 'pointer' }">{{ page }}</a>
                         </li>
                     </ul>
                 </nav>
@@ -100,15 +101,15 @@
                         <input type="text" id="name" v-model="formData.name" placeholder="Nom" required>
                         <label for="description">Description : </label>
                         <input type="text" id="description" v-model="formData.description" placeholder="Description" required>
-                        <label for="goalAmount">Montant cible : </label>
-                        <input type="number" id="goalAmount" v-model="formData.goalAmount" placeholder="Montant cible" required>
-                        <label for="currentAmount">Montant actuel : </label>
-                        <input type="number" id="currentAmount" v-model="formData.currentAmount" placeholder="Montant actuel" required>
+                        <label for="goalValue">Montant cible : </label>
+                        <input type="number" id="goalValue" v-model="formData.goalValue" placeholder="Montant cible" required>
+                        <label for="currentValue">Montant actuel : </label>
+                        <input type="number" id="currentValue" v-model="formData.currentValue" placeholder="Montant actuel" required>
                         </div>
                     </fieldset>
                     <menu>
                         <button type="submit">Enregistrer</button>
-                        <button type="button" @click="closeModal">Annuler</button>
+                        <button type="button" class="cancel" @click="closeModal">Annuler</button>
                     </menu>
                 </form>
             </dialog>
@@ -124,7 +125,9 @@
                         editMode: false,
                         formData: {
                             name: '',
-                            description: ''
+                            description: '',
+                            goalValue: '',
+                            currentValue: ''
                         },
                         editedProjectId: null,
                         pageSize: 5,
@@ -157,7 +160,7 @@
                     },
                     saveProject() {
                         if (this.editMode) {
-                            fetch(`/api/project/${this.editedProjectId}`, {
+                            fetch(`/api/projects/${this.editedProjectId}`, {
                                 method: 'PUT',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -189,7 +192,7 @@
                         }
                     },
                     deleteProject(projectId) {
-                        fetch(`/api/project/${projectId}`, {
+                        fetch(`/api/projects/${projectId}`, {
                             method: 'DELETE'
                         })
                                 .then(() => {
@@ -208,7 +211,9 @@
                     resetForm() {
                         this.formData = {
                             name: '',
-                            description: ''
+                            description: '',
+                            goalValue: '',
+                            currentValue: ''
                         };
                         this.editedProjectId = null;
                     },

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Gestion des shows</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="pics/cash1.svg">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>  
+        <script src="js/dragndrop.js"></script>
+        <style>
+            div.projects {
+                border: 1px solid lightgrey;
+                height: 400px;
+                margin: 5px;
+                overflow: scroll;
+            }
+            
+            div.projects ul {
+                height: 100%;
+                list-style-type: none;
+                padding-left: 0px;
+                width: 100%;
+            }
+            
+            div.projects li {
+                background-color: gray;
+                border: none;
+                cursor: grab;
+                color: white;
+                margin-left: auto;
+                margin-right: auto;
+                margin-bottom: 10px;
+                padding: 5px;
+                width: 80%;
+            }
+            
+            
+            #showApp {
+                margin-left: auto;
+                margin-right: auto;
+                width: 80%;
+            }
+
+            #showApp header {
+                text-align: center;
+                font-size: 24px;
+                border-bottom: 1px solid lightslategrey;
+                margin-bottom: 20px;
+            }
+
+            #showApp-table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            #showApp-table td, #showApp-table th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #showApp-table tr:nth-child(even){
+                background-color: #f2f2f2;
+            }
+
+            #showApp-table tr:hover {
+                background-color: #ddd;
+            }
+
+            #showApp-table th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: DodgerBlue;
+                color: white;
+            }
+            
+            #show-dialog {
+                width: 600px;
+            }
+        </style>
+        <script>
+            const myDropHandler = (ev) => {
+                if (ev.target.nodeName !== "LI") {
+                    dropHandler(ev);
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <div class="header">
+            <h1>FundRaising Progress</h1>
+            <div class="nav"><a href="index.html">&#x2302;</a> - Gestion des shows</div>
+        </div>
+
+        <div id="showApp">
+            <header>Enchainements</header>
+            <main>
+                <table id="showApp-table">
+                    <thead>
+                        <tr>
+                            <th>Identifiant</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tboby>
+                        <tr v-for="show in shows" :key="show.id">
+                            <td>{{ show.id }}</td>
+                            <td>{{ show.title }}</td>
+                            <td>{{ show.description }}</td>
+                            <td>
+                                <button @click="showShowModal(show)">Editer</button>
+                                <button class="delete" @click="deleteShow(show.id)">Supprimer</button>
+                            </td>
+                        </tr>
+                    </tboby>
+                </table>
+                <nav style="display: flex; justify-content: center; margin-top: 20px;">
+                    <ul style="display: flex; list-style: none; padding: 0;">
+                        <li v-for="page in totalPages" :key="page" @click="changePage(page)" style="margin: 0 5px;">
+                            <a href="#" :style="{ fontWeight: currentPage === page ? 'bold' : 'normal', cursor: 'pointer' }">{{ page }}</a>
+                        </li>
+                    </ul>
+                </nav>
+                <button @click="showShowModal(null)">Ajouter</button>
+            </main>
+            <footer></footer>
+
+            <dialog id="show-dialog">
+                <form @submit.prevent="saveShow">
+                    <fieldset>
+                        <div style="display: grid; grid-template-columns: 25% 75%">
+                            <label for="name">Nom : </label>
+                            <input type="text" id="name" v-model="formData.title" placeholder="Nom" required>
+                            <label for="description">Description : </label>
+                            <input type="text" id="description" v-model="formData.description" placeholder="Description" required>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 50% 50%">
+                            <div class="projects">
+                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)">
+                                    <li v-for="project in projects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
+                                        # {{ project.id }} - {{ project.name }}
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="projects">
+                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)">
+                                        <li v-for="project in projects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
+                                        # {{ project.id }} - {{ project.name }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <menu>
+                        <button type="submit">Enregistrer</button>
+                        <button class="cancel" type="button" @click="closeModal">Annuler</button>
+                    </menu>
+                </form>
+            </dialog>
+        </div>
+        <script>
+            const {createApp, ref, computed} = Vue;
+
+            createApp({
+                data() {
+                    return {
+                        projects: [],
+                        shows: [],
+                        modalVisible: false,
+                        editMode: false,
+                        formData: {
+                            title: '',
+                            description: ''
+                        },
+                        editedShowId: null,
+                        pageSize: 5,
+                        currentPage: 1,
+                        totalPages: 1,
+                    };
+                },
+                methods: {
+                    getAllProjects() {
+                        fetch(`/api/projects?page=0&size=65000`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.projects = data.content;
+                                })
+                                .catch(error => {
+                                    console.error("Error fetching projects : ", error);
+                                });
+                    },
+                    getAllShows(page) {
+                        fetch(`/api/shows?page=${page - 1}&size=${this.pageSize}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.shows = data.content;
+                                    this.totalPages = data.totalPages;
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching shows :', error);
+                                });
+                    },
+                    showShowModal(show) {
+                        this.editMode = !!show;
+                        this.modalVisible = true;
+                        if (show) {
+                            this.editedShowId = show.id;
+                            this.formData = {...show};
+                        } else {
+                            this.resetForm();
+                        }
+                        this.getAllProjects();
+                        document.getElementById('show-dialog').showModal();
+                    },
+                    saveShow() {
+                        if (this.editMode) {
+                            fetch(`/api/shows/${this.editedProjectId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(this.formData)
+                            })
+                                    .then(() => {
+                                        this.getAllShows(this.currentPage);
+                                        this.closeModal();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error updating show :', error);
+                                    });
+                        } else {
+                            fetch(`/api/shows`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(this.formData)
+                            })
+                                    .then(() => {
+                                        this.getAllShows(this.currentPage);
+                                        this.closeModal();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error adding show : ', error);
+                                    });
+                        }
+                    },
+                    deleteShow(showId) {
+                        fetch(`/api/shows/${showId}`, {
+                            method: 'DELETE'
+                        })
+                                .then(() => {
+                                    this.getAllProjects(this.currentPage);
+                                })
+                                .catch(error => {
+                                    console.error('Error deleting show :', error);
+                                });
+                    },
+                    closeModal() {
+                        this.modalVisible = false;
+                        this.editMode = false;
+                        this.resetForm();
+                        document.getElementById('show-dialog').close();
+                    },
+                    resetForm() {
+                        this.formData = {
+                            title: '',
+                            description: ''
+                        };
+                        this.editedShowId = null;
+                    },
+                    changePage(page) {
+                        this.currentPage = page;
+                        this.getAllShows(page);
+                    }
+                },
+                mounted() {
+                    this.getAllShows(this.currentPage);
+                }
+            }).mount('#showApp');
+        </script>
+
+    </body>
+</html>
