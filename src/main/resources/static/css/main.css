@@ -56,6 +56,10 @@ fieldset label {
     margin: 2px;
 }
 
+fieldset textarea {
+    height: 120px;
+}
+
 h1 {
     background: DodgerBlue;
     color: white;

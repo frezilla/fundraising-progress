@@ -100,7 +100,7 @@
                         <label for="name">Nom : </label>
                         <input type="text" id="name" v-model="formData.name" placeholder="Nom" required>
                         <label for="description">Description : </label>
-                        <input type="text" id="description" v-model="formData.description" placeholder="Description" required>
+                        <textarea id="description" v-model="formData.description" placeholder="Description" required></textarea>
                         <label for="goalValue">Montant cible : </label>
                         <input type="number" id="goalValue" v-model="formData.goalValue" placeholder="Montant cible" required>
                         <label for="currentValue">Montant actuel : </label>
@@ -147,7 +147,7 @@
                         document.getElementById('project-dialog').close();
                     },
                     deleteProject(projectId) {
-                        fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
+                        fetch(`/api/project/${projectId}`, { method: 'DELETE' })
                                 .then(() => { this.getAllProjects(this.currentPage); })
                                 .catch(error => { console.error('Error deleting project :', error); });
                     },
@@ -173,7 +173,7 @@
                             })
                             .catch(error => { console.error('Error updating project :', error); });
                         } else {
-                            fetch(`/api/projects`, {
+                            fetch(`/api/project`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(this.formData)

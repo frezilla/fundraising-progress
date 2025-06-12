@@ -83,6 +83,14 @@
             const myDropHandler = (ev) => {
                 if (ev.target.nodeName !== "LI") {
                     dropHandler(ev);
+                    
+                    let childArray = document.getElementById("selectedProjects-ul").children;
+                    for (let i = 0; i < childArray.length; i++) {
+                        let currentElt = childArray[i];
+                        if (currentElt.nodeName === "LI") {
+                            console.log(currentElt.children[0].value);
+                        }
+                    }
                 }
             };
         </script>
@@ -135,21 +143,19 @@
                             <label for="name">Nom : </label>
                             <input type="text" id="name" v-model="formData.title" placeholder="Nom" required>
                             <label for="description">Description : </label>
-                            <input type="text" id="description" v-model="formData.description" placeholder="Description" required>
+                            <textarea id="description" v-model="formData.description" placeholder="Description" required></textarea>
+                            <input type="text" id="selectedProjects-input" v-model="formData.selectedProjects">
                         </div>
                         <div style="display: grid; grid-template-columns: 50% 50%">
                             <div class="projects">
                                 <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="avalaibleProjects">
-                                    <li v-for="project in projects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
-                                        # {{ project.id }} - {{ project.name }}
+                                    <li v-for="project in projects" :id="'dnd_projectid_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
+                                        <input type ="hidden" :value='project.id'># {{ project.id }} - {{ project.name }}
                                     </li>
                                 </ul>
                             </div>
                             <div class="projects">
-                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="selectedProjects">
-                                    <li v-for="project in selectedProjects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
-                                        # {{ project.id }} - {{ project.name }}
-                                    </li>
+                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="selectedProjects-ul">
                                 </ul>
                             </div>
                         </div>
@@ -167,18 +173,18 @@
             createApp({
                 data() {
                     return {
-                        projects: [],
-                        selectedProjects: [],
-                        shows: [],
-                        modalVisible: false,
+                        currentPage: 1,
                         editMode: false,
+                        editedShowId: null,
                         formData: {
                             title: '',
-                            description: ''
+                            description: '',
+                            selectedProjects: []
                         },
-                        editedShowId: null,
-                        pageSize: 5,
-                        currentPage: 1,
+                        modalVisible: false,
+                        pageSize: 5,        
+                        projects: [],
+                        shows: [],
                         totalPages: 1
                     };
                 },
@@ -194,32 +200,24 @@
                         document.getElementById('show-dialog').close();
                     },
                     deleteShow(showId) {
-                        fetch(`/api/shows/${showId}`, { method: 'DELETE' })
+                        fetch(`/api/show/${showId}`, { method: 'DELETE' })
                                 .then(() => { this.getAllProjects(this.currentPage); })
                                 .catch(error => { console.error('Error deleting show :', error); });
                     },
                     getAllProjects() {
-                        fetch(`/api/projects`)
+                        fetch(`/api/project`)
                                 .then(response => response.json())
                                 .then(data => { this.projects = data.content; }) 
                                 .catch(error => { console.error("Error fetching projects : ", error); });
                     },
                     getAllShows(page) {
-                        fetch(`/api/shows?page=${page - 1}&size=${this.pageSize}`)
+                        fetch(`/api/show?page=${page - 1}&size=${this.pageSize}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     this.shows = data.content;
                                     this.totalPages = data.totalPages;
                                 })
                                 .catch(error => { console.error('Error fetching shows :', error); });
-                    },
-                    getSelectedProjects(showId) {
-                        fetch(`/api/selectProjects/${showId}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    this.selectedProjects = data.content;
-                                })
-                                .catch(error => { console.error('Error fetching select projects :', error); })
                     },
                     resetForm() {
                         this.formData = {
@@ -230,7 +228,7 @@
                     },
                     saveShow() {
                         if (this.editMode) {
-                            fetch(`/api/shows/${this.editedProjectId}`, {
+                            fetch(`/api/show/${this.editedProjectId}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(this.formData)
@@ -241,7 +239,7 @@
                                     })
                                     .catch(error => {  console.error('Error updating show :', error); });
                         } else {
-                            fetch(`/api/shows`, {
+                            fetch(`/api/show`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(this.formData)
