@@ -139,15 +139,15 @@
                         </div>
                         <div style="display: grid; grid-template-columns: 50% 50%">
                             <div class="projects">
-                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)">
+                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="avalaibleProjects">
                                     <li v-for="project in projects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
                                         # {{ project.id }} - {{ project.name }}
                                     </li>
                                 </ul>
                             </div>
                             <div class="projects">
-                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)">
-                                        <li v-for="project in projects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
+                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="selectedProjects">
+                                    <li v-for="project in selectedProjects" :id="'dnd_project_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
                                         # {{ project.id }} - {{ project.name }}
                                     </li>
                                 </ul>
@@ -168,6 +168,7 @@
                 data() {
                     return {
                         projects: [],
+                        selectedProjects: [],
                         shows: [],
                         modalVisible: false,
                         editMode: false,
@@ -178,19 +179,30 @@
                         editedShowId: null,
                         pageSize: 5,
                         currentPage: 1,
-                        totalPages: 1,
+                        totalPages: 1
                     };
                 },
                 methods: {
+                    changePage(page) {
+                        this.currentPage = page;
+                        this.getAllShows(page);
+                    },
+                    closeModal() {
+                        this.modalVisible = false;
+                        this.editMode = false;
+                        this.resetForm();
+                        document.getElementById('show-dialog').close();
+                    },
+                    deleteShow(showId) {
+                        fetch(`/api/shows/${showId}`, { method: 'DELETE' })
+                                .then(() => { this.getAllProjects(this.currentPage); })
+                                .catch(error => { console.error('Error deleting show :', error); });
+                    },
                     getAllProjects() {
-                        fetch(`/api/projects?page=0&size=65000`)
+                        fetch(`/api/projects`)
                                 .then(response => response.json())
-                                .then(data => {
-                                    this.projects = data.content;
-                                })
-                                .catch(error => {
-                                    console.error("Error fetching projects : ", error);
-                                });
+                                .then(data => { this.projects = data.content; }) 
+                                .catch(error => { console.error("Error fetching projects : ", error); });
                     },
                     getAllShows(page) {
                         fetch(`/api/shows?page=${page - 1}&size=${this.pageSize}`)
@@ -199,9 +211,47 @@
                                     this.shows = data.content;
                                     this.totalPages = data.totalPages;
                                 })
-                                .catch(error => {
-                                    console.error('Error fetching shows :', error);
-                                });
+                                .catch(error => { console.error('Error fetching shows :', error); });
+                    },
+                    getSelectedProjects(showId) {
+                        fetch(`/api/selectProjects/${showId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.selectedProjects = data.content;
+                                })
+                                .catch(error => { console.error('Error fetching select projects :', error); })
+                    },
+                    resetForm() {
+                        this.formData = {
+                            title: '',
+                            description: ''
+                        };
+                        this.editedShowId = null;
+                    },
+                    saveShow() {
+                        if (this.editMode) {
+                            fetch(`/api/shows/${this.editedProjectId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(this.formData)
+                            })
+                                    .then(() => {
+                                        this.getAllShows(this.currentPage);
+                                        this.closeModal();
+                                    })
+                                    .catch(error => {  console.error('Error updating show :', error); });
+                        } else {
+                            fetch(`/api/shows`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(this.formData)
+                            })
+                                    .then(() => {
+                                        this.getAllShows(this.currentPage);
+                                        this.closeModal();
+                                    })
+                                    .catch(error => { console.error('Error adding show : ', error); });
+                        }
                     },
                     showShowModal(show) {
                         this.editMode = !!show;
@@ -214,67 +264,6 @@
                         }
                         this.getAllProjects();
                         document.getElementById('show-dialog').showModal();
-                    },
-                    saveShow() {
-                        if (this.editMode) {
-                            fetch(`/api/shows/${this.editedProjectId}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(this.formData)
-                            })
-                                    .then(() => {
-                                        this.getAllShows(this.currentPage);
-                                        this.closeModal();
-                                    })
-                                    .catch(error => {
-                                        console.error('Error updating show :', error);
-                                    });
-                        } else {
-                            fetch(`/api/shows`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(this.formData)
-                            })
-                                    .then(() => {
-                                        this.getAllShows(this.currentPage);
-                                        this.closeModal();
-                                    })
-                                    .catch(error => {
-                                        console.error('Error adding show : ', error);
-                                    });
-                        }
-                    },
-                    deleteShow(showId) {
-                        fetch(`/api/shows/${showId}`, {
-                            method: 'DELETE'
-                        })
-                                .then(() => {
-                                    this.getAllProjects(this.currentPage);
-                                })
-                                .catch(error => {
-                                    console.error('Error deleting show :', error);
-                                });
-                    },
-                    closeModal() {
-                        this.modalVisible = false;
-                        this.editMode = false;
-                        this.resetForm();
-                        document.getElementById('show-dialog').close();
-                    },
-                    resetForm() {
-                        this.formData = {
-                            title: '',
-                            description: ''
-                        };
-                        this.editedShowId = null;
-                    },
-                    changePage(page) {
-                        this.currentPage = page;
-                        this.getAllShows(page);
                     }
                 },
                 mounted() {

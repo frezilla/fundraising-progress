@@ -2,8 +2,8 @@ package eu.frezilla.fundraising_progress.controller;
 
 import eu.frezilla.fundraising_progress.entity.Project;
 import eu.frezilla.fundraising_progress.repository.ProjectRepository;
-import java.util.Objects;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,15 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("api/projects")
+@RequestMapping("api/project")
+@RequiredArgsConstructor
 @RestController
 public class ProjectController {
     
     private final ProjectRepository projectRepository;
-    
-    public ProjectController(ProjectRepository projectRepository) {
-        this.projectRepository = Objects.requireNonNull(projectRepository);
-    }
     
     @PostMapping
     public Project create(@RequestBody Project project) {

@@ -120,32 +120,70 @@
             createApp({
                 data() {
                     return {
-                        projects: [],
-                        modalVisible: false,
+                        currentPage: 1,
                         editMode: false,
+                        editedProjectId: null,
                         formData: {
                             name: '',
                             description: '',
                             goalValue: '',
                             currentValue: ''
                         },
-                        editedProjectId: null,
+                        modalVisible: false,
                         pageSize: 5,
-                        currentPage: 1,
+                        projects: [],
                         totalPages: 1
                     };
                 },
                 methods: {
+                    changePage(page) {
+                        this.currentPage = page;
+                        this.getAllProjects(page);
+                    },
+                    closeModal() {
+                        this.modalVisible = false;
+                        this.editMode = false;
+                        this.resetForm();
+                        document.getElementById('project-dialog').close();
+                    },
+                    deleteProject(projectId) {
+                        fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
+                                .then(() => { this.getAllProjects(this.currentPage); })
+                                .catch(error => { console.error('Error deleting project :', error); });
+                    },
                     getAllProjects(page) {
-                        fetch(`/api/projects?page=${page - 1}&size=${this.pageSize}`)
+                        fetch(`/api/project?page=${page - 1}&size=${this.pageSize}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     this.projects = data.content;
                                     this.totalPages = data.totalPages;
                                 })
-                                .catch(error => {
-                                    console.error('Error fetching projects :', error);
-                                });
+                                .catch(error => { console.error('Error fetching projects :', error); });
+                    },
+                    saveProject() {
+                        if (this.editMode) {
+                            fetch(`/api/project/${this.editedProjectId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(this.formData)
+                            })
+                            .then(() => {
+                                this.getAllProjects(this.currentPage);
+                                this.closeModal();
+                            })
+                            .catch(error => { console.error('Error updating project :', error); });
+                        } else {
+                            fetch(`/api/projects`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(this.formData)
+                            })
+                            .then(() => {
+                                this.getAllProjects(this.currentPage);
+                                this.closeModal();
+                            })
+                            .catch(error => { console.error('Error adding project : ', error); });
+                        }
                     },
                     showProjectModal(project) {
                         this.editMode = !!project;
@@ -158,56 +196,6 @@
                         }
                         document.getElementById('project-dialog').showModal();
                     },
-                    saveProject() {
-                        if (this.editMode) {
-                            fetch(`/api/projects/${this.editedProjectId}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(this.formData)
-                            })
-                                    .then(() => {
-                                        this.getAllProjects(this.currentPage);
-                                        this.closeModal();
-                                    })
-                                    .catch(error => {
-                                        console.error('Error updating project :', error);
-                                    });
-                        } else {
-                            fetch(`/api/projects`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(this.formData)
-                            })
-                                    .then(() => {
-                                        this.getAllProjects(this.currentPage);
-                                        this.closeModal();
-                                    })
-                                    .catch(error => {
-                                        console.error('Error adding project : ', error);
-                                    });
-                        }
-                    },
-                    deleteProject(projectId) {
-                        fetch(`/api/projects/${projectId}`, {
-                            method: 'DELETE'
-                        })
-                                .then(() => {
-                                    this.getAllProjects(this.currentPage);
-                                })
-                                .catch(error => {
-                                    console.error('Error deleting project :', error);
-                                });
-                    },
-                    closeModal() {
-                        this.modalVisible = false;
-                        this.editMode = false;
-                        this.resetForm();
-                        document.getElementById('project-dialog').close();
-                    },
                     resetForm() {
                         this.formData = {
                             name: '',
@@ -216,10 +204,6 @@
                             currentValue: ''
                         };
                         this.editedProjectId = null;
-                    },
-                    changePage(page) {
-                        this.currentPage = page;
-                        this.getAllProjects(page);
                     }
                 },
                 mounted() {

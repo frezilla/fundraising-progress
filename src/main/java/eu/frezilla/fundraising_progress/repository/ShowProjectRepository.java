@@ -9,4 +9,6 @@ public interface ShowProjectRepository extends JpaRepository<ShowProject, ShowPr
     
     List<ShowProject> findByProject(Project project);
     
+    List<ShowProject> findByIdShowId(Long id);
+    
 }
