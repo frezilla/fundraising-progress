@@ -7,6 +7,7 @@
         <link rel="icon" type="image/x-icon" href="pics/cash1.svg">
         <link rel="stylesheet" href="css/main.css">
         <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>  
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <script src="js/dragndrop.js"></script>
         <style>
             div.projects {
@@ -84,13 +85,11 @@
                 if (ev.target.nodeName !== "LI") {
                     dropHandler(ev);
                     
-                    let childArray = document.getElementById("selectedProjects-ul").children;
-                    for (let i = 0; i < childArray.length; i++) {
-                        let currentElt = childArray[i];
-                        if (currentElt.nodeName === "LI") {
-                            console.log(currentElt.children[0].value);
-                        }
-                    }
+                    let projectsArray = [];
+                    $("#selectedProjects-ul li").each(function(index) {
+                        projectsArray.push($(this).children("input:first").val());
+                    });
+                    $("#selectedProjects-input").val(projectsArray);
                 }
             };
         </script>
@@ -148,9 +147,9 @@
                         </div>
                         <div style="display: grid; grid-template-columns: 50% 50%">
                             <div class="projects">
-                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="avalaibleProjects">
-                                    <li v-for="project in projects" :id="'dnd_projectid_' + project.id" draggable="true" ondragstart="dragStartHandler(event)">
-                                        <input type ="hidden" :value='project.id'># {{ project.id }} - {{ project.name }}
+                                <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="avalaibleProjects-ul">
+                                    <li :key="avalaibleProjects" v-for="avalaibleProject in avalaibleProjects" :id="'dnd_projectid_' + avalaibleProject.id" draggable="true" ondragstart="dragStartHandler(event)">
+                                        <input type ="hidden" :value='avalaibleProject.id'># {{ avalaibleProject.id }} - {{ avalaibleProject.name }}
                                     </li>
                                 </ul>
                             </div>
@@ -173,6 +172,7 @@
             createApp({
                 data() {
                     return {
+                        avalaibleProjects: [],
                         currentPage: 1,
                         editMode: false,
                         editedShowId: null,
@@ -183,7 +183,6 @@
                         },
                         modalVisible: false,
                         pageSize: 5,        
-                        projects: [],
                         shows: [],
                         totalPages: 1
                     };
@@ -204,11 +203,11 @@
                                 .then(() => { this.getAllProjects(this.currentPage); })
                                 .catch(error => { console.error('Error deleting show :', error); });
                     },
-                    getAllProjects() {
-                        fetch(`/api/project`)
+                    getAllAvailableProjects(showId) {
+                        fetch(`/api/show/getavalaibleprojects?id=${showId}`)
                                 .then(response => response.json())
-                                .then(data => { this.projects = data.content; }) 
-                                .catch(error => { console.error("Error fetching projects : ", error); });
+                                .then(data => { this.avalaibleProjects = data; }) 
+                                .catch(error => { console.error("Error fetching avalaible project : ", error); });
                     },
                     getAllShows(page) {
                         fetch(`/api/show?page=${page - 1}&size=${this.pageSize}`)
@@ -257,10 +256,11 @@
                         if (show) {
                             this.editedShowId = show.id;
                             this.formData = {...show};
+                            this.getAllAvailableProjects(show.id);
                         } else {
+                            this.getAllAvailableProjects(0);
                             this.resetForm();
                         }
-                        this.getAllProjects();
                         document.getElementById('show-dialog').showModal();
                     }
                 },

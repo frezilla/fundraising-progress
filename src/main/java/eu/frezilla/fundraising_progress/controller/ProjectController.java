@@ -29,7 +29,8 @@ public class ProjectController {
     
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable("id") Long id) {
-        projectRepository.deleteById(id);
+        var loaded = findById(id);
+        if (loaded.isPresent() && loaded.get().getShows().isEmpty()) projectRepository.deleteById(id);
     }
     
     @GetMapping

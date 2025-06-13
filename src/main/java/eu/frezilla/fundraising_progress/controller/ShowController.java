@@ -1,8 +1,15 @@
 package eu.frezilla.fundraising_progress.controller;
 
+import eu.frezilla.fundraising_progress.entity.Project;
 import eu.frezilla.fundraising_progress.entity.Show;
+import eu.frezilla.fundraising_progress.entity.ShowProject;
+import eu.frezilla.fundraising_progress.repository.ProjectRepository;
 import eu.frezilla.fundraising_progress.repository.ShowRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("api/show")
@@ -20,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ShowController {
     
+    private final ProjectRepository projectRepository;
     private final ShowRepository showRepository;
     
     @PostMapping
@@ -40,6 +49,26 @@ public class ShowController {
     @GetMapping("{id}")
     public Optional<Show> findById(@PathVariable("id") Long id) {
         return showRepository.findById(id);
+    }
+    
+    @GetMapping("/getavalaibleprojects")
+    public List<Project> getAvalaibleProjects(@RequestParam(defaultValue = "0") Long id) {
+        List<Project> projects = projectRepository.findAll();
+        if (Objects.equals(id, 0)) {
+            return projects;
+        } else {
+            var loaded = findById(id);
+            if (loaded.isEmpty()) return projects;
+            
+            Set<ShowProject> showProjects = loaded.get().getProjects();
+            List<Project> returnProjects = new ArrayList<>();
+            for (Project project : projects) {
+                if (showProjects.stream().filter(sp -> Objects.equals(sp.getProject().getId(), project.getId())).count() == 0) {
+                    returnProjects.add(project);
+                }
+            }
+            return returnProjects;
+        }
     }
     
     @PutMapping("{id}")
