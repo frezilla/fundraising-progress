@@ -84,12 +84,6 @@
             const myDropHandler = (ev) => {
                 if (ev.target.nodeName !== "LI") {
                     dropHandler(ev);
-                    
-                    let projectsArray = [];
-                    $("#selectedProjects-ul li").each(function(index) {
-                        projectsArray.push($(this).children("input:first").val());
-                    });
-                    $("#selectedProjects-input").val(projectsArray);
                 }
             };
         </script>
@@ -107,7 +101,7 @@
                     <thead>
                         <tr>
                             <th>Identifiant</th>
-                            <th>Titre</th>
+                            <th>Nom</th>
                             <th>Description</th>
                             <th>Actions</th>
                         </tr>
@@ -115,7 +109,7 @@
                     <tboby>
                         <tr v-for="show in shows" :key="show.id">
                             <td>{{ show.id }}</td>
-                            <td>{{ show.title }}</td>
+                            <td>{{ show.name }}</td>
                             <td>{{ show.description }}</td>
                             <td>
                                 <button @click="showShowModal(show)">Editer</button>
@@ -140,10 +134,9 @@
                     <fieldset>
                         <div style="display: grid; grid-template-columns: 25% 75%">
                             <label for="name">Nom : </label>
-                            <input type="text" id="name" v-model="formData.title" placeholder="Nom" required>
+                            <input type="text" id="name" v-model="formData.name" placeholder="Nom" required>
                             <label for="description">Description : </label>
                             <textarea id="description" v-model="formData.description" placeholder="Description" required></textarea>
-                            <input type="text" id="selectedProjects-input" v-model="formData.selectedProjects">
                         </div>
                         <div style="display: grid; grid-template-columns: 50% 50%">
                             <div class="projects">
@@ -177,9 +170,9 @@
                         editMode: false,
                         editedShowId: null,
                         formData: {
-                            title: '',
+                            name: '',
                             description: '',
-                            selectedProjects: []
+                            selectedProjects: ''
                         },
                         modalVisible: false,
                         pageSize: 5,        
@@ -220,12 +213,20 @@
                     },
                     resetForm() {
                         this.formData = {
-                            title: '',
-                            description: ''
+                            name: '',
+                            description: '',
+                            selectedProjects: ''
                         };
                         this.editedShowId = null;
                     },
                     saveShow() {
+                        
+                        let projectsArray = [];
+                        $("#selectedProjects-ul li").each(function(index) {
+                            projectsArray.push($(this).children("input:first").val());
+                        });
+                        this.formData.selectedProjects = projectsArray;
+                        
                         if (this.editMode) {
                             fetch(`/api/show/${this.editedProjectId}`, {
                                 method: 'PUT',
