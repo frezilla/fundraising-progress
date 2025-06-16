@@ -139,6 +139,8 @@
                             <textarea id="description" v-model="formData.description" placeholder="Description" required></textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: 50% 50%">
+                            <h2>Projet(s) disponible(s) :</h2>
+                            <h2>Projet(s) affecté(s) :</h2>
                             <div class="projects">
                                 <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="avalaibleProjects-ul">
                                     <li :key="avalaibleProjects" v-for="avalaibleProject in avalaibleProjects" :id="'dnd_projectid_' + avalaibleProject.id" draggable="true" ondragstart="dragStartHandler(event)">
@@ -148,6 +150,9 @@
                             </div>
                             <div class="projects">
                                 <ul ondragover="dragOverHandler(event)" ondrop="myDropHandler(event)" id="selectedProjects-ul">
+                                    <li v-for="spl in formData.showProjectLinks" :id="'dnd_projectid_' + spl.project.id" draggable="true" ondragstart="dragStartHandler(event)">
+                                        <input type ="hidden" :value='spl.project.id'># {{ spl.project.id }} - {{ spl.project.name }}
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -172,7 +177,8 @@
                         formData: {
                             name: '',
                             description: '',
-                            selectedProjects: ''
+                            selectedProjects: '',
+                            showProjectLinks: []
                         },
                         modalVisible: false,
                         pageSize: 5,        
@@ -220,7 +226,6 @@
                         this.editedShowId = null;
                     },
                     saveShow() {
-                        
                         let projectsArray = [];
                         $("#selectedProjects-ul li").each(function(index) {
                             projectsArray.push($(this).children("input:first").val());
@@ -258,6 +263,7 @@
                             this.editedShowId = show.id;
                             this.formData = {...show};
                             this.getAllAvailableProjects(show.id);
+                            console.log(this.formData.showProjectLinks[0].project.name);
                         } else {
                             this.getAllAvailableProjects(0);
                             this.resetForm();

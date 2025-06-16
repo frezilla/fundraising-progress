@@ -40,9 +40,8 @@ public class Show implements Comparable<Show>, Serializable {
     
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "show_id", referencedColumnName = "id")
-    private Set<ShowProjectLink> showProjectLinks = new TreeSet();
+    private Set<ShowProjectLink> showProjectLinks = new TreeSet<>();
     
-    @JsonIgnore
     @Transient
     private Long[] selectedProjects;
     

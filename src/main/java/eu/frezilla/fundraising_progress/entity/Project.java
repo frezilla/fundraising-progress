@@ -15,7 +15,7 @@ import org.apache.commons.lang3.ObjectUtils;
 @Data
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "projet")
+@Table(name = "project")
 public class Project implements Comparable<Project>, Serializable {
 
     @Id

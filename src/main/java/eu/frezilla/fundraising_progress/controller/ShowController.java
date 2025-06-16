@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.frezilla.fundraising_progress.repository.ShowProjectLinkRepository;
+import java.util.ArrayList;
+import java.util.Set;
 
 @RequestMapping("api/show")
 @RequiredArgsConstructor
@@ -29,32 +31,35 @@ import eu.frezilla.fundraising_progress.repository.ShowProjectLinkRepository;
 public class ShowController {
     
     private final ProjectRepository projectRepository;
-    private final ShowProjectLinkRepository showProjectRepository;
+    private final ShowProjectLinkRepository showProjectLinkRepository;
     private final ShowRepository showRepository;
     
     @PostMapping
     public Show create(@RequestBody Show show) {
-        int rankId = 0;
-        
         show = showRepository.save(show);
         
-        for (Long projectId : show.getSelectedProjects()) {
-            ShowProjectLink showProject = new ShowProjectLink();
+        createShowProjectLinks(show.getId(), show.getSelectedProjects());
+        
+        return show;
+    }
+    
+    private void createShowProjectLinks(Long showId, Long[] projectIds) {
+        int rankId = 0;
+        for (Long projectId : projectIds) {
+            ShowProjectLink spl = new ShowProjectLink();
 
             Project project = projectRepository.findById(projectId).orElseThrow();
-            showProject.setProject(project);
+            spl.setProject(project);
             
             ShowProjectLink.Id id = new Id();
             id.setRankId(rankId);
-            //id.setShow(show);
-            showProject.setId(id);
-            
-//            show.getProjects().add(showProject);
+            id.setShowId(showId);
+            spl.setId(id);
+
+            showProjectLinkRepository.save(spl);
             
             rankId++;
         }
-        
-        return show;
     }
     
     @DeleteMapping("/{id}")
@@ -78,27 +83,33 @@ public class ShowController {
         if (Objects.equals(id, (long) 0)) {
             return projects;
         } else {
-//            var loaded = findById(id);
-//            if (loaded.isEmpty()) return projects;
-//            
-//            Set<ShowProjectLink> showProjects = loaded.get().ge();
-//            List<Project> returnProjects = new ArrayList<>();
-//            for (Project project : projects) {
-//                if (showProjects.stream().filter(sp -> Objects.equals(sp.getProject().getId(), project.getId())).count() == 0) {
-//                    returnProjects.add(project);
-//                }
-//            }
-//            return returnProjects;
-            return null;
+            Optional<Show> optional = findById(id);
+            if (optional.isEmpty()) return projects;
+
+            Show show = optional.get();
+            Set<ShowProjectLink> showProjects = show.getShowProjectLinks();
+            
+            List<Project> pList = new ArrayList<>();
+            for (Project project : projects) {
+                if (showProjects.stream().filter(sp -> Objects.equals(sp.getProject().getId(), project.getId())).count() == 0) {
+                    pList.add(project);
+                }
+            }   
+            return pList;
         }
     }
     
     @PutMapping("{id}")
     public Show update(@PathVariable("id") Long id, @RequestBody Show show) {
-        var loaded = showRepository.findById(id).orElseThrow();
+        Show loaded = showRepository.findById(id).orElseThrow();
         loaded.setDescription(show.getDescription());
-       // loaded.setTitle(show.getTitle());
-        loaded.setShowProjectLinks(show.getShowProjectLinks());
+        loaded.setName(show.getName());
+        
+        showProjectLinkRepository.deleteByIdShowId(id);
+        
+        createShowProjectLinks(id, show.getSelectedProjects());
+        
+        
         return showRepository.save(loaded);
     }
 }

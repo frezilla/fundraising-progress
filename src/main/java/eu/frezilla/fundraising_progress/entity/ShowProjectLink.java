@@ -47,7 +47,7 @@ public class ShowProjectLink implements Comparable<ShowProjectLink>, Serializabl
 
         @Column(name = "show_id", nullable = false)
         @EqualsAndHashCode.Include
-        private Integer showId;
+        private Long showId;
 
         @Override
         public int compareTo(Id id) {

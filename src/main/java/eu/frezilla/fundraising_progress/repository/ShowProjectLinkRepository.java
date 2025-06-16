@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ShowProjectLinkRepository extends JpaRepository<ShowProjectLink, ShowProjectLink.Id> {
     
+    void deleteByIdShowId(Long id);
+    
 }
