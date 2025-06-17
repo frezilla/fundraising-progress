@@ -1,6 +1,5 @@
 package eu.frezilla.fundraising_progress.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.frezilla.fundraising_progress.utils.ComparatorUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

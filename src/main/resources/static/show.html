@@ -199,7 +199,7 @@
                     },
                     deleteShow(showId) {
                         fetch(`/api/show/${showId}`, { method: 'DELETE' })
-                                .then(() => { this.getAllProjects(this.currentPage); })
+                                .then(() => { this.getAllShows(this.currentPage); })
                                 .catch(error => { console.error('Error deleting show :', error); });
                     },
                     getAllAvailableProjects(showId) {
@@ -227,13 +227,13 @@
                     },
                     saveShow() {
                         let projectsArray = [];
-                        $("#selectedProjects-ul li").each(function(index) {
+                        $("#selectedProjects-ul li").each(function() {
                             projectsArray.push($(this).children("input:first").val());
                         });
                         this.formData.selectedProjects = projectsArray;
                         
                         if (this.editMode) {
-                            fetch(`/api/show/${this.editedProjectId}`, {
+                            fetch(`/api/show/${this.editedShowId}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(this.formData)
@@ -263,7 +263,6 @@
                             this.editedShowId = show.id;
                             this.formData = {...show};
                             this.getAllAvailableProjects(show.id);
-                            console.log(this.formData.showProjectLinks[0].project.name);
                         } else {
                             this.getAllAvailableProjects(0);
                             this.resetForm();

@@ -1,7 +1,10 @@
 package eu.frezilla.fundraising_progress.controller;
 
 import eu.frezilla.fundraising_progress.entity.Project;
+import eu.frezilla.fundraising_progress.entity.ShowProjectLink;
 import eu.frezilla.fundraising_progress.repository.ProjectRepository;
+import eu.frezilla.fundraising_progress.repository.ShowProjectLinkRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
     
     private final ProjectRepository projectRepository;
+    private final ShowProjectLinkRepository showProjectRepository;
     
     @PostMapping
     public Project create(@RequestBody Project project) {
@@ -28,10 +32,10 @@ public class ProjectController {
     }
     
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable("id") Long id) {
-        var loaded = findById(id);
-        //if (loaded.isPresent() && loaded.get().getShows().isEmpty()) projectRepository.deleteById(id);
-        projectRepository.deleteById(id);
+    public void deleteById(@PathVariable("id") Long id) {        
+        List<ShowProjectLink> splList = showProjectRepository.findByProjectId(id);
+        
+        if (splList.isEmpty()) projectRepository.deleteById(id);
     }
     
     @GetMapping

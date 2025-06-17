@@ -44,6 +44,8 @@ public class ShowController {
     }
     
     private void createShowProjectLinks(Long showId, Long[] projectIds) {
+        if (projectIds == null) return;
+        
         int rankId = 0;
         for (Long projectId : projectIds) {
             ShowProjectLink spl = new ShowProjectLink();
@@ -64,6 +66,7 @@ public class ShowController {
     
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable("id") Long id) {
+        showProjectLinkRepository.removeShowProjectLinkByIdShowId(id);
         showRepository.deleteById(id);
     }
     
@@ -104,12 +107,12 @@ public class ShowController {
         Show loaded = showRepository.findById(id).orElseThrow();
         loaded.setDescription(show.getDescription());
         loaded.setName(show.getName());
+        loaded = showRepository.save(loaded);
         
-        showProjectLinkRepository.deleteByIdShowId(id);
+        showProjectLinkRepository.removeShowProjectLinkByIdShowId(id);
         
         createShowProjectLinks(id, show.getSelectedProjects());
         
-        
-        return showRepository.save(loaded);
+        return loaded;
     }
 }
