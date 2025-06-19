@@ -133,7 +133,28 @@
                         </menu>
                     </form>
                 </div>
-            </main>
+            </div>
+            <div>
+                <ul>
+                    <li></li>
+                </ul>
+            </div>
+            <div>
+                <form>
+                    <fieldset>
+                        <div style="display: grid; grid-template-columns: 25% 75%">
+                            <label for="name">Nom : </label>
+                            <span>test</span>
+                            <label for="goalValue">Montant cible : </label>
+                            <input type="number" id="goalValue" v-model="formData.goalValue" placeholder="Montant cible" required>
+                            <label for="currentValue">Montant actuel : </label>
+                            <input type="number" id="currentValue" v-model="formData.currentValue" placeholder="Montant actuel" required>
+                            <label for="addValue">Montant à ajouter</label>
+                            <input type="number" id="addValue" v-model="formData.addValue" placeholder="Montant à ajouter" required>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
         </div>
         <script>
             const {createApp, ref, computed} = Vue;
