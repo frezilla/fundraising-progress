@@ -7,7 +7,45 @@
         <link rel="icon" type="image/x-icon" href="pics/cash1.svg">
         <link rel="stylesheet" href="css/main.css">
         <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <style>
+            div.projects {
+                border: 1px solid lightgrey;
+                margin: 5px;
+                margin-left: auto;
+                margin-right: auto;
+                overflow: scroll;
+                width: 80%;
+            }
+            
+            div.projects ul {
+                margin-left: auto;
+                margin-right: auto;
+                height: 120px;
+            }
+            
+            div.projects li {
+                align-content: center;
+                background-color: orangered;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                color: white;
+                display: inline-block;
+                height: 100px;
+                list-style-type: disc;
+                margin-left: 100px;
+                margin-right: auto;
+                margin-bottom: 10px;
+                padding: 5px;
+                text-align: center;
+                width: 100px;
+            }
+            
+            div.projects li:first-child {
+                margin-left: auto;
+            }
+            
             div.shows {
                 border: 1px solid lightgrey;
                 height: 200px;
@@ -28,6 +66,7 @@
             div.shows li {
                 background-color: gray;
                 border: none;
+                border-radius: 5px;
                 cursor: pointer;
                 color: white;
                 margin-left: auto;
@@ -58,18 +97,106 @@
         </div>
         
         <div id="progressApp">
-            <header>Progression</header>
+            <header>Progression&nbsp;&#127950;</header>
             <main>
-                <div>
-                    <div class="shows">
-                        <ul>
-                            <li>
-                                
-                            </li>
-                        </ul>
-                    </div>
+                <div class="title"><h2>Show(s)</h2></div>
+                <div class="shows">
+                    <ul>
+                        <li v-for="show in shows" @click="selectProjects(show)"># {{ show.id }} - {{ show.name }}</li>
+                    </ul>
+                </div>
+                <div class="title"><h2>Projet(s)</h2></div>
+                <div class="projects">
+                    <ul>
+                        <li :key="projects" v-for="project in projects" @click="selectProject(project)">&#x21d2 # {{ project.id }}</li>
+                    </ul>
+                </div>
+                <div class="title"><h2>Projet actuel</h2></div>
+                <div class="currentProject">
+                    <form @submit.prevent="saveProject">
+                        <fieldset>
+                            <div style="display: grid; grid-template-columns: 25% 75%">
+                                <label for="name">Nom :</label>
+                                <input type="text" id="name" v-model="formData.name" required readonly="readonly" placeholder="nom">
+                                <label for="name">Description :</label>
+                                <textarea id="description" placeholder="Description" v-model="formData.description" required readonly="readonly"></textarea>
+                                <label for="goalValue">Montant cible : </label>
+                                <input type="number" id="goalValue" v-model="formData.goalValue" placeholder="Montant cible" required>
+                                <label for="currentValue">Montant actuel : </label>
+                                <input type="number" id="currentValue" v-model="formData.currentValue" placeholder="Montant actuel" required>
+                                <label for="addValue">Montant à ajouter: </label>
+                                <input type="number" id="addValue" placeholder="Montant à ajouter" required>
+                            </div>
+                        </fieldset>
+                        <menu>
+                            <button type="submit">Enregistrer</button>
+                        </menu>
+                    </form>
                 </div>
             </main>
         </div>
+        <script>
+            const {createApp, ref, computed} = Vue;
+            
+            createApp({
+                data() {
+                    return {
+                        currentProjectId: null,
+                        formData: {
+                            name: '',
+                            description: '',
+                            goalValue: '',
+                            currentValue: ''
+                        },
+                        projects: [],
+                        shows: []
+                    };
+                },
+                methods: {
+                    getAllShows() {
+                        fetch(`/api/show?page=0&size=65000`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    this.shows = data.content;
+                                })
+                                .catch(error => { console.error('Error fetching shows :', error); });
+                    },
+                    saveProject() {
+                        let addValue = $("#addValue").val();
+                        let currentValue = $("#currentValue").val();
+                        currentValue += addValue;
+                        $("#currentValue").val(currentValue);
+                        fetch(`/api/project/${this.currentProjectId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(this.formData)
+                            })
+                            .catch(error => { console.error('Error updating project :', error); });
+                    },
+                    selectProjects(show) {
+                        this.currentProjectId = null;
+                        this.projects = [];
+                        this.formData = {
+                            name: '',
+                            description: '',
+                            goalValue: '',
+                            currentValue: ''
+                        };
+                        for (let i = 0; i < show.showProjectLinks.length; i++) {
+                            this.projects.push(show.showProjectLinks[i].project);
+                        }
+                    },
+                    selectProject(project) {
+                        this.currentProjectId = project.id;
+                        this.formData = {...project};
+                        $("#addValue").val(0);
+                        $("#addValue").focus();
+                    }
+                },
+                mounted() {
+                    this.getAllShows();
+                }
+            }).mount('#progressApp');
+        </script>
     </body>
 </html>
