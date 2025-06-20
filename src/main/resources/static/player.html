@@ -9,13 +9,25 @@
         <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <style>
+            div.currentProject {
+                margin: 5px;
+                margin-left: auto;
+                margin-right: auto;
+                width: 40%;
+            }
+            
+            div.currentProject fieldset {
+                border: 1px solid lightgrey;
+                margin: 0px;
+            }
+            
             div.projects {
                 border: 1px solid lightgrey;
                 margin: 5px;
                 margin-left: auto;
                 margin-right: auto;
                 overflow: scroll;
-                width: 80%;
+                width: 50%;
             }
             
             div.projects ul {
@@ -134,27 +146,6 @@
                     </form>
                 </div>
             </div>
-            <div>
-                <ul>
-                    <li></li>
-                </ul>
-            </div>
-            <div>
-                <form>
-                    <fieldset>
-                        <div style="display: grid; grid-template-columns: 25% 75%">
-                            <label for="name">Nom : </label>
-                            <span>test</span>
-                            <label for="goalValue">Montant cible : </label>
-                            <input type="number" id="goalValue" v-model="formData.goalValue" placeholder="Montant cible" required>
-                            <label for="currentValue">Montant actuel : </label>
-                            <input type="number" id="currentValue" v-model="formData.currentValue" placeholder="Montant actuel" required>
-                            <label for="addValue">Montant à ajouter</label>
-                            <input type="number" id="addValue" v-model="formData.addValue" placeholder="Montant à ajouter" required>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
         </div>
         <script>
             const {createApp, ref, computed} = Vue;
@@ -183,14 +174,40 @@
                                 .catch(error => { console.error('Error fetching shows :', error); });
                     },
                     saveProject() {
-                        let addValue = $("#addValue").val();
-                        let currentValue = $("#currentValue").val();
+                        let addValue = Number($("#addValue").val());
+                        let currentValue = Number($("#currentValue").val());
+                        
                         currentValue += addValue;
+                        this.formData.currentValue = currentValue;
+                        
                         $("#currentValue").val(currentValue);
+                        $("#addValue").val('');
+                        
                         fetch(`/api/project/${this.currentProjectId}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(this.formData)
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                let currentProject = data;
+                                
+                                this.projects.forEach(function (item) {
+                                    if (item.id === currentProject.id) {
+                                        item.currentValue = currentProject.currentValue;
+                                        item.goalValue = currentProject.goalValue;
+                                    }
+                                });
+                                
+                                this.shows.forEach(function (show) {
+                                    show.showProjectLinks.forEach(function (showProjectLink) {
+                                        if (showProjectLink.project.id === currentProject.id) {
+                                            showProjectLink.project.currentValue = currentProject.currentValue;
+                                            showProjectLink.project.goalValue = currentProject.goalValue;
+                                        }
+                                    });
+                                });
+                                
                             })
                             .catch(error => { console.error('Error updating project :', error); });
                     },
