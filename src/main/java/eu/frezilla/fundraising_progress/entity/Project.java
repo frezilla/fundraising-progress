@@ -6,7 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import lombok.Data;
@@ -37,9 +38,9 @@ public class Project implements Comparable<Project>, Serializable {
     @Column(name = "name", nullable = false)
     private String name;
     
-    @Lob
-    @Column(name = "picture", columnDefinition="BLOB")
-    private byte[] picture;
+    @OneToOne
+    @JoinColumn(name = "id", referencedColumnName = "project_id")
+    private Picture picture;
     
     @Override
     public int compareTo(Project project) {
