@@ -55,6 +55,7 @@ public class ProjectController {
         loaded.setDescription(project.getDescription());
         loaded.setGoalValue(project.getGoalValue());
         loaded.setName(project.getName());
+        loaded.setPicture(project.getPicture());
         return projectRepository.save(loaded);
     }
         
