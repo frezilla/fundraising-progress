@@ -1,13 +1,40 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>Show must go on</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" type="image/x-icon" href="pics/cash1.svg">
         <link rel="stylesheet" href="css/main.css">
         <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+        <style>
+            body {
+                background: white;
+                font-family: 'Myriad Pro', 'Helvetica', sans-serif;
+                padding: 8% 10%;
+            }
+        </style>
     </head>
     <body>
+        <div style="display: grid; grid-template-columns: 50% 50%">
+            <div style="align-content: center">
+                <p><span style="color: #742a21; font-size: 5em; font-weight: bold">1 €</span></p>
+                <p><span style="color: #ea5644; font-size: 1em; font-weight: lighter">sur un objectif de 100 €</span></p>
+            </div>
+            <div style="text-align: right;">
+                <div style="align-content: center; height: 340px; margin-left: auto; width: 340px">
+                    <img src="pics/camera.svg" style="max-height: 320px; max-width: 320px">
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 20px">
+            <div style="background-color: #f1f1f1; margin: 0 auto; width: 100%">
+                <div style="color: #fff7e3; background-color: #742a21; font-size: 2.5em !important; padding: 10px; text-align: center; width:45%">45%</div>
+            </div>
+            <div style="color: #ea5644; font-size: 1em; font-weight: lighter; text-align: right; width: 100%">100 €</div>
+        </div>
+        <div style="height: 200px; background-color: red">
+            <span>Titre</span>
+        </div>
     </body>
 </html>
