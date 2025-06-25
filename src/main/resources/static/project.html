@@ -264,7 +264,7 @@
                             reader.onload = function(event) {
                                 let data = event.target.result;
                                 Vue.picture = data;
-                            }
+                            };
                             
                             reader.readAsDataURL(pictureFile);
                         }
