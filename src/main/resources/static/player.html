@@ -229,6 +229,18 @@
                         this.formData = {...project};
                         $("#addValue").val(0);
                         $("#addValue").focus();
+                        
+                        currentForm = new FormData();
+                        currentForm.append('id', this.currentProjectId);
+                        fetch(`api/play/${this.currentProjectId}`, {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(currentForm)
+                        })
+                                .catch(error => {
+                                    console.log("Error updating play : ", error);
+                                    
+                                });
                     }
                 },
                 mounted() {
