@@ -7,6 +7,7 @@
         <link rel="icon" type="image/x-icon" href="pics/cash1.svg">
         <link rel="stylesheet" href="css/main.css">
         <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <style>
             body {
                 background: white;
@@ -16,25 +17,80 @@
         </style>
     </head>
     <body>
-        <div style="display: grid; grid-template-columns: 50% 50%">
-            <div style="align-content: center">
-                <p><span style="color: #742a21; font-size: 5em; font-weight: bold">1 €</span></p>
-                <p><span style="color: #ea5644; font-size: 1em; font-weight: lighter">sur un objectif de 100 €</span></p>
-            </div>
-            <div style="text-align: right;">
-                <div style="align-content: center; height: 340px; margin-left: auto; width: 340px">
-                    <img src="pics/camera.svg" style="max-height: 320px; max-width: 320px">
+        <div id="showMustGoOnApp">
+            <div style="display: grid; grid-template-columns: 50% 50%">
+                <div style="align-content: center">
+                    <p><span style="color: #742a21; font-size: 5em; font-weight: bold">{{ currentValue }} €</span></p>
+                    <p><span style="color: #ea5644; font-size: 1em; font-weight: lighter">sur un objectif de {{ goalValue }} €</span></p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="align-content: center; height: 340px; margin-left: auto; width: 340px">
+                        <img v-bind:src="picture" style="max-height: 320px; max-width: 320px" alt="illustration du projet">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="margin-top: 20px">
-            <div style="background-color: #f1f1f1; margin: 0 auto; width: 100%">
-                <div style="color: #fff7e3; background-color: #742a21; font-size: 2.5em !important; padding: 10px; text-align: center; width:45%">45%</div>
+            <div style="margin-top: 30px">
+                <div style="background-color: #f1f1f1; margin: 0 auto; width: 100%">
+                    <div id="progress_bar" style="color: #fff7e3; background-color: #742a21; font-size: 2.5em !important; padding: 10px; text-align: center; width:5%">{{percentage}} %</div>
+                </div>
+                <div style="color: #ea5644; font-size: 1em; font-weight: lighter; margin-top: 5px; text-align: right; width: 100%">{{ goalValue }} €</div>
             </div>
-            <div style="color: #ea5644; font-size: 1em; font-weight: lighter; text-align: right; width: 100%">100 €</div>
+            <div style="align-content: end; height: 200px">
+                <p><span style="color: #ea5644; font-size: 2em; font-weight: lighter">{{ name }}</span></p>
+            </div>
         </div>
-        <div style="height: 200px; background-color: red">
-            <span>Titre</span>
-        </div>
+        <script>
+            const {createApp, ref, computed} = Vue;
+            
+            createApp({
+                data() {
+                    return {
+                        name: '',
+                        goalValue: '',
+                        currentValue: '',
+                        picture: '',
+                        percentage: '0'
+                    };
+                },
+                methods: {
+                    load() {
+                        fetch(`api/play`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    let _name = data.currentProject.name;
+                                    let _goalValue = data.currentProject.goalValue;
+                                    let _currentValue = data.currentProject.currentValue;
+                                    let _picture = data.currentProject.picture;
+                                    
+                                    this.name = _name;
+                                    this.goalValue = new Intl.NumberFormat("fr-FR", { maximumSignificantDigits: 10 }).format(_goalValue);
+                                    this.currentValue = new Intl.NumberFormat("fr-FR", { maximumSignificantDigits: 10 }).format(_currentValue);
+                                    this.picture = atob(_picture);
+                                    
+                                    let currentPercentage = (_currentValue / _goalValue * 100.0).toFixed(0);
+                                    
+                                    let percentageStyle;
+                                    if (currentPercentage < 5) percentageStyle = 5 + "%";
+                                    else if (currentPercentage > 99) percentageStyle = 99 + "%";
+                                    else percentageStyle = currentPercentage.toString() + "%";
+                                    
+                                    let percentageColor = "#742a21";
+                                    if (_currentValue >= _goalValue) percentageColor = "#478635";
+                                    
+                                    if (currentPercentage == 100 && _currentValue < _goalValue) currentPercentage = 99;
+                                    
+                                    this.percentage = currentPercentage;
+                                    $("#progress_bar").css("width", percentageStyle).css("background-color", percentageColor);
+                                })
+                                .catch(error => {
+                                    console.error('Error loading datas :', error);
+                                });
+                    }
+                },
+                mounted() {
+                    setInterval(() => { this.load(); }, 1000);
+                }
+            }).mount('#showMustGoOnApp');
+        </script>
     </body>
 </html>

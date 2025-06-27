@@ -10,7 +10,7 @@
     </parent>
     <groupId>eu.frezilla</groupId>
     <artifactId>fundraising-progress</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>Fundraising Progress</name>
     <description>Outils de visualisation de la progression des collectes des fonds pour financer des projets</description>
     <url/>
