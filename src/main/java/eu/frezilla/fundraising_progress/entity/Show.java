@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.io.Serializable;
@@ -39,6 +40,7 @@ public class Show implements Comparable<Show>, Serializable {
     
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "show_id", referencedColumnName = "id")
+    @OrderBy("rankid")
     private Set<ShowProjectLink> showProjectLinks = new TreeSet<>();
     
     @Transient

@@ -1,10 +1,8 @@
 package eu.frezilla.fundraising_progress.controller;
 
 import eu.frezilla.fundraising_progress.entity.Play;
-import eu.frezilla.fundraising_progress.entity.Project;
 import eu.frezilla.fundraising_progress.repository.PlayRepository;
 import eu.frezilla.fundraising_progress.repository.ProjectRepository;
-import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
